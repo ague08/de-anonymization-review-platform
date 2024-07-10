@@ -11,30 +11,23 @@ def index():
 def upload():
     return render_template('upload.html')
 
-@main.route('/feedback')
-def feedback():
-    return render_template('feedback.html')
-
 @main.route('/upload', methods=['POST'])
 def upload_file():
     data_type = request.form.get('dataType')
-    if 'file' not in request.files:
+    file = request.files.get('file')
+    
+    if file and file.filename != '':
+        data = pd.read_csv(file)
         if not data_type:
-            return jsonify({"error": "No file part and no data type specified"})
-        return render_template('result.html', data_type=data_type, risk_results=get_state_of_art_info(data_type))
+            data_type = detect_data_type(data)
+        risk_results = assess_deanonymization_risk(data, data_type)
+        return render_template('result.html', data_type=data_type, risk_results=risk_results)
     
-    file = request.files['file']
-    if file.filename == '':
-        if not data_type:
-            return jsonify({"error": "No selected file and no data type specified"})
-        return render_template('result.html', data_type=data_type, risk_results=get_state_of_art_info(data_type))
+    if data_type:
+        feedback_info = get_state_of_art_info(data_type)
+        return render_template('result.html', data_type=data_type, risk_results=feedback_info)
     
-    data = pd.read_csv(file)
-    if not data_type:
-        data_type = detect_data_type(data)
-    
-    risk_results = assess_deanonymization_risk(data, data_type)
-    return render_template('result.html', data_type=data_type, risk_results=risk_results)
+    return jsonify({"error": "Please provide either a data file or select a data type."})
 
 @main.route('/feedback', methods=['POST'])
 def get_feedback():
@@ -57,28 +50,10 @@ def detect_data_type(data):
         return 'unknown'
 
 def assess_deanonymization_risk(data, data_type):
-    risk = {}
-    if data_type == 'genomic':
-        risk = assess_genomic_risk(data)
-    elif data_type == 'ecg':
-        risk = assess_ecg_risk(data)
-    elif data_type == 'neuroimaging':
-        risk = assess_neuroimaging_risk(data)
-    elif data_type == 'ehr':
-        risk = assess_ehr_risk(data)
+    # Here, you would use an API or tool to perform the de-anonymization risk assessment.
+    # For demonstration, we're returning a placeholder result.
+    risk = {"risk_assessment": f"Risk assessment results for {data_type} data"}
     return risk
-
-def assess_genomic_risk(data):
-    return {"risk": "genomic risk assessment results"}
-
-def assess_ecg_risk(data):
-    return {"risk": "ECG risk assessment results"}
-
-def assess_neuroimaging_risk(data):
-    return {"risk": "neuroimaging risk assessment results"}
-
-def assess_ehr_risk(data):
-    return {"risk": "EHR risk assessment results"}
 
 def get_state_of_art_info(data_type):
     info = {}
@@ -131,3 +106,14 @@ def get_state_of_art_info(data_type):
             ]
         }
     return info
+
+import requests
+
+def assess_deanonymization_risk(data, data_type):
+    # Example URL of a hypothetical de-anonymization risk assessment API
+    api_url = "https://example.com/deanonymization/api"
+    response = requests.post(api_url, json={"data": data.to_dict(), "data_type": data_type})
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": "Failed to assess de-anonymization risk"}
