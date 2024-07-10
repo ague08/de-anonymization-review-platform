@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 import pandas as pd
+import numpy as np
 
 main = Blueprint('main', __name__)
 
@@ -21,7 +22,6 @@ def upload_file():
 
 def assess_deanonymization_risk(data):
     # Placeholder function for de-anonymization risk assessment
-    # Implement your risk metrics and state of the art attack simulations here
     risk = {
         "k_anonymity": calculate_k_anonymity(data),
         "l_diversity": calculate_l_diversity(data),
@@ -30,13 +30,27 @@ def assess_deanonymization_risk(data):
     return risk
 
 def calculate_k_anonymity(data):
-    # Implement k-anonymity calculation
-    pass
+    # Example k-anonymity calculation
+    quasi_identifiers = ['age', 'gender', 'zip_code']  # replace with actual column names
+    k = min(data.groupby(quasi_identifiers).size())
+    return k
 
 def calculate_l_diversity(data):
-    # Implement l-diversity calculation
-    pass
+    # Example l-diversity calculation
+    sensitive_attribute = 'disease'  # replace with actual column name
+    quasi_identifiers = ['age', 'gender', 'zip_code']  # replace with actual column names
+    diversity = data.groupby(quasi_identifiers)[sensitive_attribute].nunique().min()
+    return diversity
 
 def calculate_t_closeness(data):
-    # Implement t-closeness calculation
-    pass
+    # Example t-closeness calculation
+    sensitive_attribute = 'disease'  # replace with actual column name
+    quasi_identifiers = ['age', 'gender', 'zip_code']  # replace with actual column names
+    overall_distribution = data[sensitive_attribute].value_counts(normalize=True)
+    t_closeness = float('inf')
+    for _, group in data.groupby(quasi_identifiers):
+        group_distribution = group[sensitive_attribute].value_counts(normalize=True)
+        distance = np.sum(np.abs(overall_distribution - group_distribution))
+        if distance < t_closeness:
+            t_closeness = distance
+    return t_closeness
