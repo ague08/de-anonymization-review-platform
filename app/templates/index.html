@@ -1,7 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Welcome to the De-Anonymization Review Platform</h1>
-<p>This platform allows you to upload health data for de-anonymization risk assessment or select a data type for feedback.</p>
-<p>Select a feature from the navigation menu to get started.</p>
+<h2>Upload Your Data or Specify Data Type</h2>
+<form id="uploadForm" action="{{ url_for('main.upload_file') }}" method="post" enctype="multipart/form-data">
+    <label for="dataType">Select Data Type (optional):</label>
+    <select name="dataType" id="dataType">
+        <option value="">--Select Type--</option>
+        <option value="genomic">Genomic Data</option>
+        <option value="ecg">ECG Data</option>
+        <option value="neuroimaging">Neuroimaging Data</option>
+        <option value="ehr">EHR Data</option>
+    </select>
+    <br><br>
+    <label for="file">Upload Data File (optional):</label>
+    <input type="file" name="file" id="file">
+    <br><br>
+    <input type="submit" value="Submit">
+</form>
+<div id="result"></div>
 {% endblock %}
