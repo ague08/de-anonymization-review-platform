@@ -1,7 +1,13 @@
 from flask import Blueprint, request, jsonify, render_template
-import pandas as pd
+import os
+from werkzeug.utils import secure_filename
+from app.data_analysis import analyze_data
 
 main = Blueprint('main', __name__)
+
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 @main.route('/')
 def index():
@@ -13,33 +19,17 @@ def upload_file():
     file = request.files.get('file')
 
     if file and file.filename != '':
-        data = pd.read_csv(file)
-        if not data_type:
-            data_type = detect_data_type(data)
-        results = perform_analysis(data, data_type)
-        return render_template('result.html', data_type=data_type, results=results)
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
+        results = analyze_data(file_path, data_type)
+        return render_template('result.html', data_type=results['message'], results=results)
     
     if data_type:
         results = get_state_of_art_info(data_type)
         return render_template('result.html', data_type=data_type, results=results)
     
     return jsonify({"error": "Please provide either a data file or select a data type."})
-
-def detect_data_type(data):
-    if 'gene' in data.columns or 'sequence' in data.columns:
-        return 'genomic'
-    elif 'ecg_signal' in data.columns or 'heart_rate' in data.columns:
-        return 'ecg'
-    elif 'image' in data.columns or 'brain_activity' in data.columns:
-        return 'neuroimaging'
-    elif 'patient_id' in data.columns or 'diagnosis' in data.columns:
-        return 'ehr'
-    else:
-        return 'unknown'
-
-def perform_analysis(data, data_type):
-    # Placeholder function for data analysis and de-anonymization risk assessment
-    return {"analysis": f"Performed analysis for {data_type} data"}
 
 def get_state_of_art_info(data_type):
     info = {}
