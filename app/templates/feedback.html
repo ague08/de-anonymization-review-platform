@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Get Feedback on Data Type</h2>
+<form id="feedbackForm" action="{{ url_for('main.get_feedback') }}" method="post">
+    <label for="dataType">Select Data Type:</label>
+    <select name="dataType" id="dataType">
+        <option value="genomic">Genomic Data</option>
+        <option value="ecg">ECG Data</option>
+        <option value="neuroimaging">Neuroimaging Data</option>
+        <option value="ehr">EHR Data</option>
+    </select>
+    <br><br>
+    <input type="submit" value="Get Feedback">
+</form>
+<div id="feedbackResult"></div>
+{% endblock %}

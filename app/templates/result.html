@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Data Type: {{ data_type }}</h2>
+<h3>Risk Assessment Results</h3>
+<pre>{{ risk_results | tojson(indent=2) }}</pre>
+<a href="{{ url_for('main.upload') }}">Upload Another File</a>
+{% endblock %}

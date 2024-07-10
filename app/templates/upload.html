@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Upload Your Data</h2>
+<form id="uploadForm" action="{{ url_for('main.upload_file') }}" method="post" enctype="multipart/form-data">
+    <label for="dataType">Select Data Type:</label>
+    <select name="dataType" id="dataType">
+        <option value="">--Select Type--</option>
+        <option value="genomic">Genomic Data</option>
+        <option value="ecg">ECG Data</option>
+        <option value="neuroimaging">Neuroimaging Data</option>
+        <option value="ehr">EHR Data</option>
+    </select>
+    <br><br>
+    <label for="file">Upload Data File (Optional):</label>
+    <input type="file" name="file" id="file">
+    <br><br>
+    <input type="submit" value="Upload">
+</form>
+<div id="result"></div>
+{% endblock %}
